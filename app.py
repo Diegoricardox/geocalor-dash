@@ -73,6 +73,31 @@ def dd(id_, options, value, label=None, multi=False):
     return html.Div(items, style={'flex':'1','minWidth':'160px'})
 
 
+def info_card_saude(titulo, icon, descricao, variaveis, metodologia, status='desenvolvimento'):
+    cor_status = {'desenvolvimento': '#e07b39', 'disponivel': '#2a9d8f', 'planejado': '#7b2d8b'}
+    label_status = {'desenvolvimento': '🔧 Em desenvolvimento', 'disponivel': '✅ Disponível', 'planejado': '📋 Planejado'}
+    return html.Div(className='info-card', children=[
+        html.Div(style={'display':'flex','justifyContent':'space-between','alignItems':'flex-start','marginBottom':'12px'}, children=[
+            html.H5([html.Span(icon, style={'marginRight':'8px'}), titulo]),
+            html.Span(label_status.get(status, status),
+                      style={'background': cor_status.get(status,'#999'), 'color':'#fff',
+                             'padding':'3px 10px','borderRadius':'12px','fontSize':'11px','fontWeight':'600'}),
+        ]),
+        html.P(descricao, style={'color':'#555','fontSize':'13px','marginBottom':'12px'}),
+        html.Div(style={'display':'grid','gridTemplateColumns':'1fr 1fr','gap':'12px'}, children=[
+            html.Div(style={'background':'#f8f9fa','borderRadius':'6px','padding':'12px'}, children=[
+                html.Strong('Variáveis analisadas:', style={'color':TEAL,'fontSize':'12px'}),
+                html.Ul([html.Li(v, style={'fontSize':'12px','color':'#555'}) for v in variaveis],
+                        style={'margin':'6px 0 0','paddingLeft':'16px'}),
+            ]),
+            html.Div(style={'background':'#f8f9fa','borderRadius':'6px','padding':'12px'}, children=[
+                html.Strong('Metodologia:', style={'color':TEAL,'fontSize':'12px'}),
+                html.P(metodologia, style={'fontSize':'12px','color':'#555','margin':'6px 0 0'}),
+            ]),
+        ]),
+    ])
+
+
 # ── SIDEBAR ────────────────────────────────────────────────────────────────
 
 ABAS = [
@@ -90,10 +115,10 @@ ABAS = [
 
 sidebar = html.Div(id='sidebar', children=[
     html.Div(id='sidebar-brand', children=[
-        html.Img(src='/assets/header_geocalor.png', style={'maxWidth':'100px','marginBottom':'6px'}),
+        html.Img(src='/assets/header_geocalor.png', style={'maxWidth':'90px','marginBottom':'6px'}),
         html.Br(),
-        html.Img(src='/assets/header_ocs.png', style={'maxWidth':'100px','marginTop':'4px'}),
-        html.P('Monitoramento de ondas de calor e impactos na saúde', style={'marginTop':'6px'}),
+        html.Img(src='/assets/header_ocs.png', style={'maxWidth':'110px','marginTop':'6px','background':'white','borderRadius':'4px','padding':'3px'}),
+        html.P('Monitoramento de ondas de calor e impactos na saúde', style={'marginTop':'8px'}),
     ]),
     html.Nav([
         html.A(
@@ -110,14 +135,15 @@ header = html.Div(id='top-navbar', children=[
         html.P('Dashboard GeoCalor | OCS', className='brand-title'),
         html.P('Monitoramento de ondas de calor e seus impactos na saúde das populações das Regiões Metropolitanas brasileiras.', className='brand-sub'),
     ]),
-    html.Img(src='/assets/header_ocs.png', style={'height':'38px','background':'white','borderRadius':'6px','padding':'3px'}),
+    html.Img(src='/assets/header_ocs.png', style={'height':'36px','background':'white','borderRadius':'6px','padding':'3px'}),
 ])
 
 footer = html.Div(id='footer', children=[
-    html.Div([
-        html.Img(src='/assets/logo_pcdas.png', style={'height':'30px','marginRight':'12px','verticalAlign':'middle'}),
-        html.Img(src='/assets/header_ocs.png', style={'height':'30px','marginRight':'12px','verticalAlign':'middle','background':'white','borderRadius':'4px','padding':'2px'}),
-    ], style={'marginBottom':'8px'}),
+    html.Div(style={'display':'flex','justifyContent':'center','alignItems':'center','gap':'16px','marginBottom':'10px'}, children=[
+        html.Img(src='/assets/logo_pcdas.png', style={'height':'28px','background':'white','borderRadius':'4px','padding':'2px 6px'}),
+        html.Img(src='/assets/header_ocs.png', style={'height':'28px','background':'white','borderRadius':'4px','padding':'2px 6px'}),
+        html.Img(src='/assets/fiocruz.jpg', style={'height':'28px','borderRadius':'4px'}),
+    ]),
     html.Div([html.Strong('Desenvolvimento do painel: '), 'Diego Ricardo Xavier | OCS/ICICT/Fiocruz — 2026']),
     html.Div('GeoCalor Dashboard Python | Dados: INMET/ICEA | Metodologia: EHF (Excess Heat Factor)'),
 ])
@@ -147,7 +173,7 @@ tab_inicio = html.Div(className='page-wrapper', children=[
             html.P([html.Strong('Financiamento: '), 'CNPq — Conselho Nacional de Desenvolvimento Científico e Tecnológico. Projeto aprovado no edital PIBIC/UnB 2023–2024.']),
         ]), md=6),
         dbc.Col(html.Div(className='info-card', children=[
-            html.H5('Regiões Metropolitanas'),
+            html.H5('Regiões Metropolitanas Monitoradas'),
             html.Ul([html.Li([html.Span('📍', style={'marginRight':'6px'}), c]) for c in CIDADES],
                     style={'columns':'2','listStyle':'none','padding':'0','fontSize':'13px'}),
         ]), md=6),
@@ -178,15 +204,17 @@ tab_inicio = html.Div(className='page-wrapper', children=[
     ], 'teal'),
     html.Div(className='parceiros-bar', children=[
         html.H6('Parceiros e Financiadores'),
-        html.Div([
-            html.Img(src='/assets/unb.png'),
-            html.Img(src='/assets/cnpq.png'),
-            html.Img(src='/assets/fiocruz.jpg'),
-            html.Img(src='/assets/inmet.png'),
-            html.Img(src='/assets/icea.png'),
-            html.Img(src='/assets/observatorio.png'),
-            html.Img(src='/assets/logo_pcdas.png'),
+        html.Div(style={'display':'flex','flexWrap':'wrap','justifyContent':'center','alignItems':'center','gap':'8px'}, children=[
+            html.Img(src='/assets/unb.png', style={'height':'45px'}),
+            html.Img(src='/assets/cnpq.png', style={'height':'45px'}),
+            html.Img(src='/assets/fiocruz.jpg', style={'height':'45px'}),
+            html.Img(src='/assets/inmet.png', style={'height':'45px'}),
+            html.Img(src='/assets/icea.png', style={'height':'45px'}),
+            html.Img(src='/assets/header_ocs.png', style={'height':'45px','background':'#f0f0f0','borderRadius':'4px','padding':'3px'}),
+            html.Img(src='/assets/logo_pcdas.png', style={'height':'45px'}),
         ]),
+        html.P([html.Strong('Desenvolvimento do painel: '), 'Diego Ricardo Xavier | OCS/ICICT/Fiocruz — 2026'],
+               style={'marginTop':'12px','fontSize':'12px','color':'#777'}),
     ]),
 ])
 
@@ -205,8 +233,8 @@ tab_sobre = html.Div(className='page-wrapper', children=[
         html.P([html.Strong('Projeto desenvolvido pelo Laboratório de Geografia, Ambiente e Saúde (LAGAS) da Universidade de Brasília (UnB)')]),
         html.Br(),
         html.P([html.Strong('Equipe do Projeto: '), 'Helen Gurgel, Eliane Lima e Silva, Eucilene Santana, Amarilis Bezerra, Bruno Porto, Marina Miranda, Peter Zeilhofer, Caio Leal, Hendesson Alves, Isabella de Sá, Livia Feitosa']),
-        html.P([html.Strong('Construção do Painel: '), 'Bruno Porto e Hendesson Alves']),
-        html.P([html.Strong('Desenvolvimento do Painel (versão Python — GeoCalor Dash): '), 'Diego Ricardo Xavier | OCS/ICICT/Fiocruz']),
+        html.P([html.Strong('Construção do Painel (versão R/Shiny): '), 'Bruno Porto e Hendesson Alves']),
+        html.P([html.Strong('Desenvolvimento do Painel (versão Python — GeoCalor Dash): '), html.Span('Diego Ricardo Xavier | OCS/ICICT/Fiocruz', style={'color':TEAL,'fontWeight':'600'})]),
         html.P([html.Strong('Fontes dos dados: '), 'Instituto Nacional de Meteorologia (INMET) e Instituto de Controle do Espaço Aéreo (ICEA).']),
         html.Br(),
         html.P([html.Strong('Como Citar:')]),
@@ -236,6 +264,7 @@ tab_temperaturas = html.Div(className='page-wrapper', children=[
             ),
         ]),
     ]),
+    dbc.Row(id='kpi-temp-row', className='mb-3'),
     chart_card('Temperatura Diária com Ondas de Calor', [
         dcc.Graph(id='graf-temp', config={'displayModeBar': False}),
     ], 'teal'),
@@ -247,11 +276,14 @@ tab_temperaturas = html.Div(className='page-wrapper', children=[
             dcc.Graph(id='graf-ehf', config={'displayModeBar': False}),
         ], 'orange'), md=6),
     ]),
-    dbc.Row(id='kpi-temp-row', className='mb-3'),
     chart_card('✨ Calendário EHF — Visualização por Semana do Ano', [
+        html.P('Cada célula representa um dia do ano. Azul = EHF negativo (fresco), vermelho = EHF positivo (calor). Dias de onda de calor se destacam em tons quentes.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-calendario', config={'displayModeBar': False}),
     ], 'purple'),
     chart_card('✨ Distribuição Mensal de Temperatura Máxima (Ridge Plot)', [
+        html.P('Distribuição estatística da temperatura máxima por mês. Permite identificar meses com maior variabilidade e valores extremos.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-ridge', config={'displayModeBar': False}),
     ], 'dark'),
 ])
@@ -286,14 +318,17 @@ tab_ondas = html.Div(className='page-wrapper', children=[
     chart_card('Tendência Anual de Dias de Onda de Calor', [
         dcc.Graph(id='graf-tendencia', config={'displayModeBar': False}),
     ], 'green'),
-    chart_card('✨ Anomalia de Temperatura Média Anual (estilo IPCC)', [
+    chart_card('Anomalia de Temperatura Média Anual (estilo IPCC)', [
+        html.P('Barras vermelhas = anos mais quentes que a média histórica; barras azuis = anos mais frios. Evidencia o aquecimento progressivo.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-anomalia', config={'displayModeBar': False}),
     ], 'orange'),
 ])
 
 tab_extremos = html.Div(className='page-wrapper', children=[
     chart_card('Mapa Interativo de Eventos Extremos nas Regiões Metropolitanas', [
-        html.P('Visualização geoespacial das 15 Regiões Metropolitanas monitoradas pelo GeoCalor.', style={'padding':'8px 12px','fontSize':'13px','color':'#555'}),
+        html.P('Tamanho da bolha = total de dias de onda de calor (1981–2023). Cor = intensidade acumulada. Passe o mouse para detalhes.',
+               style={'padding':'8px 12px','fontSize':'13px','color':'#555'}),
         dcc.Graph(id='mapa-extremos', figure=fig_mapa_bolhas(mapa_dados()), config={'displayModeBar': False}),
     ], 'teal'),
     html.Div(className='filter-bar', children=[
@@ -319,12 +354,15 @@ tab_extremos = html.Div(className='page-wrapper', children=[
         dbc.Col(html.Div(className='chart-card', children=[
             html.Div('Tabela de Eventos Extremos', className='chart-card-header teal'),
             html.Div(className='chart-card-body', style={'padding':'12px'}, children=[
-                html.P('A tabela abaixo mostra os eventos de onda de calor identificados pelo índice EHF.', style={'fontSize':'12px','color':'#666'}),
+                html.P('Resumo estatístico das ondas de calor por cidade. Filtre por período e intensidade. Clique nas colunas para ordenar.',
+                       style={'fontSize':'12px','color':'#666','marginBottom':'8px'}),
                 html.Div(id='tabela-extremos'),
             ]),
         ]), md=7),
     ]),
     chart_card('Distribuição de Intensidade das Ondas de Calor por Cidade', [
+        html.P('Proporção de dias de onda de calor por intensidade (Low / Severe / Extreme) em cada Região Metropolitana.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-dist-intens', figure=fig_distribuicao_intensidade(distribuicao_intensidade()), config={'displayModeBar': False}),
     ], 'brown'),
 ])
@@ -334,55 +372,137 @@ tab_alertas = html.Div(className='page-wrapper', children=[
         dd('alerta-cidade', [{'label': c, 'value': c} for c in CIDADES], 'Belém', 'Região Metropolitana:'),
     ]),
     chart_card('Sazonalidade das Ondas de Calor por Década', [
+        html.P('Frequência mensal de dias de onda de calor agrupada por década. Permite identificar mudanças na sazonalidade ao longo do tempo.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-sazonalidade', config={'displayModeBar': False}),
     ], 'teal'),
     chart_card('✨ Evolução Anual dos Dias de OC por Intensidade — Todas as RMs', [
+        html.P('Área empilhada mostrando a evolução temporal da composição de intensidade das ondas de calor em todas as regiões metropolitanas.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-stream', figure=fig_streamgraph_intensidade(df_all), config={'displayModeBar': False}),
     ], 'orange'),
 ])
 
 tab_saude_mental = html.Div(className='page-wrapper', children=[
-    html.Div(className='info-card', children=[
-        html.H5('🧠 Saúde Mental (SIA) — Em desenvolvimento'),
-        html.P('Esta seção apresentará a análise dos atendimentos ambulatoriais de saúde mental (SIA) em períodos de ondas de calor.'),
+    html.Div(className='hero-section', style={'padding':'24px'}, children=[
+        html.H2('🧠 Saúde Mental — Sistema de Informações Ambulatoriais (SIA)'),
+        html.P('Análise dos atendimentos ambulatoriais de saúde mental em períodos de ondas de calor nas Regiões Metropolitanas brasileiras.'),
+    ]),
+    info_card_saude(
+        titulo='Saúde Mental e Ondas de Calor',
+        icon='🧠',
+        descricao='O calor extremo está associado ao aumento de transtornos mentais, agitação, agressividade e piora de condições psiquiátricas preexistentes. Esta seção analisará os atendimentos do SIA/DATASUS em períodos de ondas de calor identificadas pelo índice EHF.',
+        variaveis=[
+            'Atendimentos ambulatoriais por CID-10 (F00–F99)',
+            'Internações por transtornos mentais',
+            'Uso de psicotrópicos em períodos de calor',
+            'Correlação EHF × demanda por serviços de saúde mental',
+        ],
+        metodologia='Linkage entre dados climáticos (EHF) e registros do SIA/DATASUS. Análise de séries temporais com modelos de regressão de Poisson e análise de interrupção de séries temporais (ITS).',
+        status='desenvolvimento',
+    ),
+    dbc.Row([
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}'}, children=[
+            html.H6('Evidências científicas', style={'color':TEAL}),
+            html.P('Estudos mostram aumento de 8–12% nas internações psiquiátricas durante ondas de calor severas (EHF > p85). O risco é maior para idosos, pessoas em situação de rua e pacientes com esquizofrenia.', style={'fontSize':'13px','color':'#555'}),
+        ]), md=6),
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}'}, children=[
+            html.H6('Dados utilizados', style={'color':ORANGE}),
+            html.P('SIA/DATASUS — Produção Ambulatorial do SUS. CID-10: F00–F99 (Transtornos mentais e comportamentais). Período: 2000–2023. Granularidade: mensal por município.', style={'fontSize':'13px','color':'#555'}),
+        ]), md=6),
     ]),
 ])
 
 tab_internacoes = html.Div(className='page-wrapper', children=[
-    html.Div(className='info-card', children=[
-        html.H5('🏥 Internações (SIH) — Em desenvolvimento'),
-        html.P('Esta seção apresentará a análise das internações hospitalares (SIH) em períodos de ondas de calor.'),
+    html.Div(className='hero-section', style={'padding':'24px'}, children=[
+        html.H2('🏥 Internações Hospitalares — Sistema de Informações Hospitalares (SIH)'),
+        html.P('Análise das internações hospitalares em períodos de ondas de calor nas Regiões Metropolitanas brasileiras.'),
+    ]),
+    info_card_saude(
+        titulo='Internações e Ondas de Calor',
+        icon='🏥',
+        descricao='Ondas de calor aumentam significativamente as internações por doenças cardiovasculares, respiratórias e renais. Esta seção analisará os dados do SIH/DATASUS para quantificar o impacto das ondas de calor nas hospitalizações.',
+        variaveis=[
+            'Internações por doenças cardiovasculares (CID I00–I99)',
+            'Internações por doenças respiratórias (CID J00–J99)',
+            'Internações por insuficiência renal (CID N17–N19)',
+            'Mortalidade hospitalar em períodos de OC',
+            'Tempo de permanência hospitalar',
+        ],
+        metodologia='Linkage entre dados climáticos (EHF) e AIH do SIH/DATASUS. Modelos de regressão de Poisson com defasagem temporal (lag 0–7 dias). Análise estratificada por faixa etária e sexo.',
+        status='desenvolvimento',
+    ),
+    dbc.Row([
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}'}, children=[
+            html.H6('Grupos de risco prioritários', style={'color':TEAL}),
+            html.Ul([
+                html.Li('Idosos (≥ 65 anos): risco 3× maior'),
+                html.Li('Crianças (< 5 anos): vulnerabilidade termorregulação'),
+                html.Li('Pacientes com doenças crônicas'),
+                html.Li('Trabalhadores ao ar livre'),
+            ], style={'fontSize':'13px','color':'#555'}),
+        ]), md=6),
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}'}, children=[
+            html.H6('Dados utilizados', style={'color':ORANGE}),
+            html.P('SIH/DATASUS — Autorizações de Internação Hospitalar (AIH). Período: 2000–2023. Granularidade: mensal por município de residência. Variáveis: diagnóstico principal, idade, sexo, desfecho.', style={'fontSize':'13px','color':'#555'}),
+        ]), md=6),
     ]),
 ])
 
 tab_srag = html.Div(className='page-wrapper', children=[
-    html.Div(className='info-card', children=[
-        html.H5('🫁 SRAG (Vigilância) — Em desenvolvimento'),
-        html.P('Esta seção apresentará a análise dos casos de SRAG em períodos de ondas de calor.'),
+    html.Div(className='hero-section', style={'padding':'24px'}, children=[
+        html.H2('🫁 SRAG — Síndrome Respiratória Aguda Grave'),
+        html.P('Análise dos casos de SRAG notificados em períodos de ondas de calor nas Regiões Metropolitanas brasileiras.'),
+    ]),
+    info_card_saude(
+        titulo='SRAG e Ondas de Calor',
+        icon='🫁',
+        descricao='O calor extremo agrava condições respiratórias e aumenta a susceptibilidade a infecções. Esta seção analisará os dados do SIVEP-Gripe para investigar a associação entre ondas de calor e casos de SRAG.',
+        variaveis=[
+            'Casos notificados de SRAG (SIVEP-Gripe)',
+            'Hospitalizações por SRAG',
+            'Óbitos por SRAG em períodos de OC',
+            'Agentes etiológicos (Influenza, VSR, COVID-19)',
+            'Correlação EHF × incidência de SRAG',
+        ],
+        metodologia='Análise de séries temporais com modelos DLNM (Distributed Lag Non-linear Models) para capturar efeitos defasados e não-lineares do calor sobre a incidência de SRAG. Dados: SIVEP-Gripe/SVS/MS.',
+        status='planejado',
+    ),
+    dbc.Row([
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}'}, children=[
+            html.H6('Mecanismos biológicos', style={'color':TEAL}),
+            html.P('O calor extremo reduz a função mucociliar, aumenta a permeabilidade das mucosas e compromete a resposta imune inata, favorecendo infecções respiratórias. Além disso, o aumento do uso de ar-condicionado pode concentrar patógenos em ambientes fechados.', style={'fontSize':'13px','color':'#555'}),
+        ]), md=6),
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}'}, children=[
+            html.H6('Dados utilizados', style={'color':ORANGE}),
+            html.P('SIVEP-Gripe — Sistema de Informação de Vigilância Epidemiológica da Gripe. Período: 2012–2023. Granularidade: semanal por município. Variáveis: diagnóstico, hospitalização, óbito, agente etiológico.', style={'fontSize':'13px','color':'#555'}),
+        ]), md=6),
     ]),
 ])
 
 tab_originais = html.Div(className='page-wrapper', children=[
-    html.Div(className='info-card', children=[
-        html.H5('✨ Visualizações Originais'),
-        html.P('Visualizações inéditas desenvolvidas para a versão Python do GeoCalor, complementando as análises do painel original com novas perspectivas analíticas.'),
+    html.Div(className='hero-section', style={'padding':'24px'}, children=[
+        html.H2('✨ Visualizações Originais'),
+        html.P('Análises inéditas desenvolvidas para a versão Python do GeoCalor, complementando o painel original com novas perspectivas analíticas.'),
     ]),
     chart_card('✨ Temperatura × Duração × Total de Dias OC (Bubble Chart)', [
-        html.P('Cada bolha representa uma Região Metropolitana. O tamanho indica o total de dias de onda de calor. A cor identifica a macrorregião do Brasil.',
+        html.P('Cada bolha representa uma Região Metropolitana. O tamanho indica o total de dias de onda de calor (1981–2023). A cor identifica a macrorregião do Brasil. Permite comparar o perfil de risco climático de todas as RMs em um único gráfico.',
                style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-bubble', figure=fig_bubble_cidades(df_all), config={'displayModeBar': False}),
     ], 'purple'),
     html.Div(className='filter-bar', children=[
         dd('radar-cidades', [{'label': c, 'value': c} for c in CIDADES],
            ['Belém', 'Cuiabá', 'São Paulo', 'Curitiba', 'Fortaleza'],
-           'Comparar Regiões Metropolitanas:', multi=True),
+           'Comparar Regiões Metropolitanas (até 6):', multi=True),
     ]),
     chart_card('✨ Perfil de Risco Climático por RM (Radar Chart)', [
-        html.P('Comparação normalizada de 5 dimensões de risco: temperatura máxima, duração das OC, intensidade EHF, umidade e frequência anual.',
+        html.P('Comparação normalizada de 5 dimensões de risco: temperatura máxima, duração das OC, intensidade EHF, umidade e frequência anual. Quanto maior a área, maior o risco climático geral.',
                style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-radar', config={'displayModeBar': False}),
     ], 'dark'),
     chart_card('✨ Evolução da Composição de Intensidade ao Longo das Décadas', [
+        html.P('Área empilhada mostrando como a proporção de dias de OC por intensidade (Low / Severe / Extreme) evoluiu de 1981 a 2023 em todas as RMs. O crescimento da área vermelha (Extreme) evidencia a intensificação das ondas de calor.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-stream2', figure=fig_streamgraph_intensidade(df_all), config={'displayModeBar': False}),
     ], 'orange'),
 ])
@@ -411,21 +531,21 @@ app.layout = html.Div([
     prevent_initial_call=False,
 )
 def trocar_aba(*args):
+    from dash import ctx
     state = args[-1]
-    ctx = dash.callback_context
-    if not ctx.triggered or ctx.triggered[0]['value'] is None:
-        aba = state or 'inicio'
-    else:
-        trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    trigger_id = ctx.triggered_id or f'nav-{state or "inicio"}'
+    aba = state or 'inicio'
+    if trigger_id and trigger_id.startswith('nav-'):
         aba = trigger_id.replace('nav-', '')
-    mapa_abas = {
+
+    tabs = {
         'inicio': tab_inicio, 'sobre': tab_sobre,
         'temperaturas': tab_temperaturas, 'ondas': tab_ondas,
         'extremos': tab_extremos, 'alertas': tab_alertas,
         'saude_mental': tab_saude_mental, 'internacoes': tab_internacoes,
         'srag': tab_srag, 'originais': tab_originais,
     }
-    return mapa_abas.get(aba, tab_inicio), aba
+    return tabs.get(aba, tab_inicio), aba
 
 
 @app.callback(
@@ -440,23 +560,28 @@ def trocar_aba(*args):
     Input('temp-vars', 'value'),
 )
 def update_temperaturas(cidade, ano, vars_sel):
-    df  = filter_df(cidade=cidade, ano=str(ano))
-    kpi = kpi_cidade_ano(cidade, int(ano))
+    df = filter_df(cidade=cidade, ano=str(ano))
     show_max = 'max' in (vars_sel or [])
     show_med = 'med' in (vars_sel or [])
     show_min = 'min' in (vars_sel or [])
-    f_temp = fig_temperatura_diaria(df, cidade, ano, show_max, show_med, show_min)
-    f_umid = fig_umidade(df, cidade, ano)
-    f_ehf  = fig_ehf(df, cidade, ano)
-    f_cal  = fig_heatmap_calendario(df, cidade, ano)
-    f_ridg = fig_ridge_mensal(filter_df(cidade=cidade), cidade)
-    kpi_row = dbc.Row([
-        dbc.Col(kpi_box(kpi['dias_hw'], 'Dias de onda de calor', '🔥', 'kpi-orange'), md=3),
-        dbc.Col(kpi_box(f"{kpi['temp_max']}°C", 'Temperatura máxima', '🌡️', 'kpi-teal'), md=3),
-        dbc.Col(kpi_box(f"{kpi['temp_med']}°C", 'Temperatura média', '📊', 'kpi-green'), md=3),
-        dbc.Col(kpi_box(f"{kpi['umidade']}%", 'Umidade média', '💧', 'kpi-brown'), md=3),
-    ])
-    return f_temp, f_umid, f_ehf, kpi_row, f_cal, f_ridg
+
+    f_temp  = fig_temperatura_diaria(df, cidade, ano, show_max, show_med, show_min)
+    f_umid  = fig_umidade(df, cidade, ano)
+    f_ehf   = fig_ehf(df, cidade, ano)
+    f_cal   = fig_heatmap_calendario(df, cidade, ano)
+    f_ridge = fig_ridge_mensal(filter_df(cidade=cidade), cidade)
+
+    # KPIs dinâmicos
+    kpi = kpi_cidade_ano(cidade, ano)
+    kpi_row = [
+        dbc.Col(kpi_box(kpi['dias_hw'], f'Dias de OC em {ano}', '🔥', 'kpi-brown'), md=2),
+        dbc.Col(kpi_box(f"{kpi['temp_max']:.1f}°C", 'Temp. Máxima', '🌡️', 'kpi-orange'), md=2),
+        dbc.Col(kpi_box(f"{kpi['temp_med']:.1f}°C", 'Temp. Média', '📊', 'kpi-teal'), md=2),
+        dbc.Col(kpi_box(f"{kpi['umidade']:.0f}%", 'Umidade Média', '💧', 'kpi-green'), md=2),
+        dbc.Col(kpi_box(kpi['n_eventos'], 'Nº de Ondas', '🌊', 'kpi-dark'), md=2),
+        dbc.Col(kpi_box(f"{kpi['ehf_max']:.1f}", 'EHF Máximo', '⚡', 'kpi-brown'), md=2),
+    ]
+    return f_temp, f_umid, f_ehf, kpi_row, f_cal, f_ridge
 
 
 @app.callback(
@@ -503,8 +628,8 @@ def update_extremos(cidade, anos, intensidade):
         data=tbl.to_dict('records'),
         columns=[{'name': c, 'id': c} for c in tbl.columns],
         style_table={'overflowX': 'auto'},
-        style_header={'backgroundColor': '#2b9eb3', 'color': 'white', 'fontWeight': 'bold', 'fontSize': '12px'},
-        style_cell={'fontSize': '12px', 'padding': '6px 10px'},
+        style_header={'backgroundColor': TEAL, 'color': 'white', 'fontWeight': 'bold', 'fontSize': '12px'},
+        style_cell={'fontSize': '12px', 'padding': '6px 10px', 'textAlign': 'left'},
         style_data_conditional=[{'if': {'row_index': 'odd'}, 'backgroundColor': '#f8f9fa'}],
         export_format='csv',
         page_size=15,

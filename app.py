@@ -110,7 +110,6 @@ ABAS = [
     ('saude_mental', '🧠', 'Saúde Mental (SIA)'),
     ('internacoes',  '🏥', 'Internações (SIH)'),
     ('srag',         '🪁', 'SRAG (Vigilância)'),
-    ('originais',    '✨', 'Visualizações Originais'),
     ('atualizacao',  '🔄', 'Atualização de Dados'),
 ]
 
@@ -382,6 +381,21 @@ tab_ondas = html.Div(className='page-wrapper', children=[
                style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-anomalia', config={'displayModeBar': False}),
     ], 'orange'),
+    chart_card('✨ Temperatura × Duração × Total de Dias OC (Bubble Chart Comparativo)', [
+        html.P('Cada bolha representa uma Região Metropolitana. O tamanho indica o total de dias de onda de calor (1981–2023). A cor identifica a macrorregião. Permite comparar o perfil de risco climático de todas as RMs em um único gráfico.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(id='graf-bubble', figure=fig_bubble_cidades(df_all), config={'displayModeBar': False}),
+    ], 'purple'),
+    html.Div(className='filter-bar', children=[
+        dd('radar-cidades', [{'label': c, 'value': c} for c in CIDADES],
+           ['Belém', 'Cuiabá', 'São Paulo', 'Curitiba', 'Fortaleza'],
+           'Comparar Regiões Metropolitanas no Radar (até 6):', multi=True),
+    ]),
+    chart_card('✨ Perfil de Risco Climático por RM (Radar Chart)', [
+        html.P('Comparação normalizada de 5 dimensões de risco: temperatura máxima, duração das OC, intensidade EHF, umidade e frequência anual. Quanto maior a área, maior o risco climático geral.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(id='graf-radar', config={'displayModeBar': False}),
+    ], 'dark'),
 ])
 
 tab_extremos = html.Div(className='page-wrapper', children=[
@@ -800,33 +814,6 @@ tab_atualizacao = html.Div(className='page-wrapper', children=[
     ]),
 ])
 
-tab_originais = html.Div(className='page-wrapper', children=[
-    html.Div(className='hero-section', style={'padding':'24px'}, children=[
-        html.H2('✨ Visualizações Originais'),
-        html.P('Análises inéditas desenvolvidas para a versão Python do GeoCalor, complementando o painel original com novas perspectivas analíticas.'),
-    ]),
-    chart_card('✨ Temperatura × Duração × Total de Dias OC (Bubble Chart)', [
-        html.P('Cada bolha representa uma Região Metropolitana. O tamanho indica o total de dias de onda de calor (1981–2023). A cor identifica a macrorregião do Brasil. Permite comparar o perfil de risco climático de todas as RMs em um único gráfico.',
-               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
-        dcc.Graph(id='graf-bubble', figure=fig_bubble_cidades(df_all), config={'displayModeBar': False}),
-    ], 'purple'),
-    html.Div(className='filter-bar', children=[
-        dd('radar-cidades', [{'label': c, 'value': c} for c in CIDADES],
-           ['Belém', 'Cuiabá', 'São Paulo', 'Curitiba', 'Fortaleza'],
-           'Comparar Regiões Metropolitanas (até 6):', multi=True),
-    ]),
-    chart_card('✨ Perfil de Risco Climático por RM (Radar Chart)', [
-        html.P('Comparação normalizada de 5 dimensões de risco: temperatura máxima, duração das OC, intensidade EHF, umidade e frequência anual. Quanto maior a área, maior o risco climático geral.',
-               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
-        dcc.Graph(id='graf-radar', config={'displayModeBar': False}),
-    ], 'dark'),
-    chart_card('✨ Evolução da Composição de Intensidade ao Longo das Décadas', [
-        html.P('Área empilhada mostrando como a proporção de dias de OC por intensidade (Low / Severe / Extreme) evoluiu de 1981 a 2023 em todas as RMs. O crescimento da área vermelha (Extreme) evidencia a intensificação das ondas de calor.',
-               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
-        dcc.Graph(id='graf-stream2', figure=fig_streamgraph_intensidade(df_all), config={'displayModeBar': False}),
-    ], 'orange'),
-])
-
 # ── LAYOUT PRINCIPAL ──────────────────────────────────────────────────────
 
 app.layout = html.Div([
@@ -863,7 +850,7 @@ def trocar_aba(*args):
         'temperaturas': tab_temperaturas, 'ondas': tab_ondas,
         'extremos': tab_extremos, 'alertas': tab_alertas,
         'saude_mental': tab_saude_mental, 'internacoes': tab_internacoes,
-        'srag': tab_srag, 'originais': tab_originais,
+        'srag': tab_srag,
         'atualizacao': tab_atualizacao,
     }
     return tabs.get(aba, tab_inicio), aba
@@ -975,7 +962,11 @@ def update_sazonalidade(cidade):
 )
 def update_radar(cidades):
     if not cidades:
-        cidades = ['Belém', 'Cuiabá', 'São Paulo']
+        cidades = ['Belém', 'Cuiabá', 'São Paulo', 'Curitiba', 'Fortaleza']
+    if isinstance(cidades, str):
+        cidades = [cidades]
+    # Limitar a 6 cidades para legibilidade
+    cidades = cidades[:6]
     return fig_radar_cidade(df_all, cidades)
 
 

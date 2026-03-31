@@ -13,14 +13,21 @@ echo "║       GeoCalor Dash — Setup & Run        ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
 
-# 0. Atualizar código do repositório (git pull)
+# 0. Atualizar código do repositório
 if git rev-parse --is-inside-work-tree &>/dev/null; then
     echo "🔄 Atualizando código do repositório..."
-    git config pull.rebase false
-    git pull origin main --allow-unrelated-histories 2>&1 | tail -3
+    # Configurar gh como credential helper (suporte a repos privados)
+    if command -v gh &>/dev/null && gh auth status &>/dev/null 2>&1; then
+        gh auth setup-git 2>/dev/null || true
+        git pull origin main 2>&1 | tail -3
+    else
+        git config pull.rebase false
+        git pull origin main --allow-unrelated-histories 2>&1 | tail -3
+    fi
     echo "✅ Código atualizado"
 else
     echo "⚠️  Não é um repositório git — pulando git pull"
+    echo "   Para clonar: gh repo clone $REPO"
 fi
 echo ""
 

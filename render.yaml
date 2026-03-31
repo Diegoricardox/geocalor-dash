@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: geocalor-dash
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt &&
+      mkdir -p data &&
+      curl -L "https://github.com/Diegoricardox/geocalor-dash/releases/download/v1.0/temp.csv.gz" -o data/temp.csv.gz
+    startCommand: gunicorn app:server --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0

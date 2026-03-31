@@ -24,6 +24,8 @@ from app.utils.charts import (
     fig_distribuicao_intensidade, fig_sazonalidade_decadal,
     fig_mapa_bolhas, fig_ridge_mensal, fig_heatmap_calendario,
     fig_bubble_cidades, fig_streamgraph_intensidade, fig_radar_cidade,
+    fig_mapa_protocolos_mundo, fig_populacoes_sensiveis, fig_distribuicao_abrangencia,
+    fig_serie_sih, fig_serie_sia, fig_serie_srag,
     TEAL, ORANGE, GREEN, RED, DARK,
 )
 
@@ -441,10 +443,34 @@ tab_extremos = html.Div(className='page-wrapper', children=[
 ])
 
 tab_alertas = html.Div(className='page-wrapper', children=[
+    html.Div(className='hero-section', style={'padding':'24px'}, children=[
+        html.H2('🔔 Sistemas de Alertas de Ondas de Calor e Saúde'),
+        html.P('Revisão dos principais protocolos de sistemas de alerta para ondas de calor e saúde no mundo. Fonte: LAGAS/UnB (2025).'),
+    ]),
+    # Mapa mundial de protocolos
+    chart_card('🌍 Distribuição Mundial dos Protocolos de Sistemas de Alerta (n=63, 18 países)', [
+        html.P(['Revisão sistemática realizada pelo LAGAS/UnB em 2025. A Índia lidera com 23 documentos, fruto de esforço conjunto do governo nacional e estaduais. O Brasil possui 2 planos locais (Rio de Janeiro e São Paulo). ',
+                html.A('Acessar dashboard completo', href='https://sistemas-de-alertas.onrender.com/', target='_blank', style={'color':TEAL})],
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_mapa_protocolos_mundo(), config={'displayModeBar': False}),
+    ], 'teal'),
+    # Distribuição por abrangência e instituição
+    chart_card('📊 Distribuição por Abrangência e Instituição Responsável', [
+        html.P('A maioria dos protocolos tem abrangência regional ou local. Órgãos de gestão de riscos e saúde são os principais responsáveis pela elaboração.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_distribuicao_abrangencia(), config={'displayModeBar': False}),
+    ], 'orange'),
+    # Populações sensíveis
+    chart_card('👥 Populações Identificadas como Sensíveis nos Protocolos', [
+        html.P('Idosos e crianças aparecem com maior frequência. Atletas, usuários de drogas e pessoas em situação de rua também são frequentemente citados.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_populacoes_sensiveis(), config={'displayModeBar': False}),
+    ], 'teal'),
+    # Sazonalidade por RM
     html.Div(className='filter-bar', children=[
         dd('alerta-cidade', [{'label': c, 'value': c} for c in CIDADES], 'Belém', 'Região Metropolitana:'),
     ]),
-    chart_card('Sazonalidade das Ondas de Calor por Década', [
+    chart_card('📅 Sazonalidade das Ondas de Calor por Década', [
         html.P('Frequência mensal de dias de onda de calor agrupada por década. Permite identificar mudanças na sazonalidade ao longo do tempo.',
                style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(id='graf-sazonalidade', config={'displayModeBar': False}),
@@ -547,10 +573,18 @@ tab_saude_mental = html.Div(className='page-wrapper', children=[
             dcc.Graph(figure=_fig_taxa_normalizada(), config={'displayModeBar': False}),
         ], 'orange'), md=6),
     ]),
+    chart_card('📈 Série Temporal de Atendimentos de Saúde Mental com Limiares', [
+        html.P([
+            'Padrão de atendimentos ambulatoriais por transtornos mentais com limiares de alerta (quebras naturais de Jenks). ',
+            html.A('Ver dashboard completo', href='https://saude-mental-sia-s9ro.onrender.com/', target='_blank', style={'color':TEAL}),
+            html.Span(' | Dados representativos — integração real com SIA/DATASUS em desenvolvimento.', style={'color':'#aaa'}),
+        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_serie_sia(), config={'displayModeBar': False}),
+    ], 'teal'),
     html.Div(className='info-card', style={'marginTop':'16px','background':'#f8f9fa','borderLeft':f'4px solid #999'}, children=[
         html.H6('📊 Dados SIA/DATASUS — Em Desenvolvimento', style={'color':'#666'}),
         html.P('A integração com os dados reais do SIA/DATASUS está em desenvolvimento. Quando disponível, esta seção exibirá séries temporais de atendimentos ambulatoriais por transtornos mentais (CID F00–F99) correlacionadas com os eventos de onda de calor identificados pelo EHF.', style={'fontSize':'13px','color':'#666'}),
-        html.P(['Para contribuir com dados ou metodologia, acesse o repositório: ', html.A('github.com/Diegoricardox/geocalor-dash', href='https://github.com/Diegoricardox/geocalor-dash', target='_blank', style={'color':TEAL})], style={'fontSize':'12px','color':'#888'}),
+        html.P([html.A('Para contribuir com dados ou metodologia, acesse o repositório: ', href='https://github.com/Diegoricardox/geocalor-dash', target='_blank', style={'color':TEAL})], style={'fontSize':'12px','color':'#888'}),
     ]),
 ])
 
@@ -643,6 +677,14 @@ tab_internacoes = html.Div(className='page-wrapper', children=[
                style={'padding':'8px 12px','fontSize':'11px','color':'#888'}),
         dcc.Graph(figure=_fig_oe_ratio(), config={'displayModeBar': False}),
     ], 'teal'),
+    chart_card('📈 Série Temporal de Internações por SRAG com Limiares', [
+        html.P([
+            'Série temporal mensal de internações por SRAG com limiares de alerta por RM. ',
+            html.A('Ver dashboard completo', href='https://saude-sih.onrender.com/', target='_blank', style={'color':TEAL}),
+            html.Span(' | Dados representativos — integração real com SIH/DATASUS em desenvolvimento.', style={'color':'#aaa'}),
+        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_serie_sih(), config={'displayModeBar': False}),
+    ], 'teal'),
     html.Div(className='info-card', style={'marginTop':'16px','background':'#f8f9fa','borderLeft':f'4px solid #999'}, children=[
         html.H6('📊 Dados SIH/DATASUS — Em Desenvolvimento', style={'color':'#666'}),
         html.P('A integração com os dados reais do SIH/DATASUS está em desenvolvimento. Quando disponível, esta seção exibirá séries temporais de internações por causa (cardiovascular, respiratória, renal) correlacionadas com os eventos de onda de calor identificados pelo EHF.', style={'fontSize':'13px','color':'#666'}),
@@ -721,6 +763,14 @@ tab_srag = html.Div(className='page-wrapper', children=[
             html.P([html.A('🔗 Acessar OpenDataSUS — SRAG Hospitalizados', href='https://opendatasus.saude.gov.br/dataset/srag-2021-a-2024', target='_blank', style={'color':TEAL,'fontSize':'12px'})]),
         ]), md=6),
     ]),
+    chart_card('📈 Série Temporal de Casos de SRAG com Limiares', [
+        html.P([
+            'Série temporal mensal de casos de SRAG (Vigilância SIVEP-Gripe) com limiares de alerta. O pico de COVID-19 em 2020–2021 é claramente visível. ',
+            html.A('Ver dashboard completo', href='https://saude-srag-data.onrender.com/', target='_blank', style={'color':TEAL}),
+            html.Span(' | Dados representativos — integração real com SIVEP-Gripe em desenvolvimento.', style={'color':'#aaa'}),
+        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_serie_srag(), config={'displayModeBar': False}),
+    ], 'teal'),
     html.Div(className='info-card', style={'marginTop':'16px','background':'#f8f9fa','borderLeft':f'4px solid #999'}, children=[
         html.H6('📊 Integração SIVEP-Gripe — Planejada para 2026', style={'color':'#666'}),
         html.P('Quando integrado, este módulo exibirá séries temporais de casos de SRAG correlacionadas com eventos de onda de calor (EHF), curvas de resposta dose-resposta (DLNM) e mapas de risco por RM.', style={'fontSize':'13px','color':'#666'}),

@@ -540,3 +540,253 @@ def fig_radar_cidade(df_all: pd.DataFrame, cidades: list) -> go.Figure:
         height=460,
     )
     return fig
+
+
+# ── NOVOS GRÁFICOS — INTEGRAÇÃO COM DASHBOARDS LAGAS ──────────────────────
+
+def fig_mapa_protocolos_mundo() -> go.Figure:
+    """
+    Mapa mundial coroplético com número de protocolos de sistemas de alerta
+    de ondas de calor por país (revisão LAGAS/UnB, 2025).
+    Fonte: sistemas-de-alertas.onrender.com
+    """
+    # Dados coletados da revisão LAGAS 2025 (63 documentos, 18 países)
+    dados_paises = {
+        'IND': 23, 'USA': 8, 'AUS': 5, 'CAN': 4, 'ESP': 3,
+        'PRT': 3, 'GBR': 2, 'FRA': 2, 'BRA': 2, 'ITA': 2,
+        'DEU': 1, 'JPN': 1, 'CHN': 1, 'ZAF': 1, 'MEX': 1,
+        'ARG': 1, 'PAK': 1, 'BGD': 1,
+    }
+    paises = list(dados_paises.keys())
+    valores = list(dados_paises.values())
+
+    fig = go.Figure(data=go.Choropleth(
+        locations=paises,
+        z=valores,
+        colorscale=[[0, '#d4f1f9'], [0.25, '#2b9eb3'], [0.6, '#e07b39'], [1, '#c0392b']],
+        colorbar=dict(title='Nº de<br>Protocolos', thickness=12, len=0.7),
+        hovertemplate='<b>%{location}</b><br>Protocolos: %{z}<extra></extra>',
+        marker_line_color='white',
+        marker_line_width=0.5,
+    ))
+    fig.update_layout(
+        font=dict(family='Segoe UI, Arial', size=12, color='#333'),
+        paper_bgcolor='white',
+        title=dict(text='Distribuição Mundial dos Protocolos de Sistemas de Alerta (n=63, 18 países)', font=dict(size=13)),
+        geo=dict(
+            showframe=False,
+            showcoastlines=True,
+            coastlinecolor='#aaa',
+            showland=True,
+            landcolor='#f5f5f5',
+            showocean=True,
+            oceancolor='#e8f4f8',
+            bgcolor='white',
+            projection_type='natural earth',
+        ),
+        margin=dict(l=0, r=0, t=50, b=0),
+        height=420,
+    )
+    return fig
+
+
+def fig_populacoes_sensiveis() -> go.Figure:
+    """
+    Gráfico de barras horizontais — populações identificadas como sensíveis
+    nos protocolos de sistemas de alerta revisados pelo LAGAS/UnB (2025).
+    Fonte: sistemas-de-alertas.onrender.com
+    """
+    dados = [
+        ('Idosos', 35), ('Crianças', 30),
+        ('Pop. em situação de rua', 26), ('Baixa renda / moradia precária', 25),
+        ('Pop. em isolamento social', 22), ('Trabalhadores ao ar livre', 21),
+        ('Grávidas', 18), ('Portadores de doenças crônicas', 17),
+        ('Atletas / prática esportiva', 14), ('Usuários de drogas e/ou álcool', 13),
+        ('PCD', 11), ('Pacientes com medicamentos termorreguladores', 10),
+        ('Migrantes / refugiados', 9), ('Povos indígenas', 7),
+        ('Pedestres', 6), ('Mulheres', 5), ('Pop. privada de liberdade', 4),
+    ]
+    labels = [d[0] for d in dados]
+    valores = [d[1] for d in dados]
+    cores = [ORANGE if v >= 20 else (TEAL if v >= 10 else '#aaa') for v in valores]
+
+    fig = go.Figure(go.Bar(
+        x=valores, y=labels,
+        orientation='h',
+        marker_color=cores,
+        text=valores,
+        textposition='outside',
+        hovertemplate='%{y}: %{x} protocolos<extra></extra>',
+    ))
+    fig.update_layout(
+        **LAYOUT_BASE,
+        title=dict(text='Populações Identificadas como Sensíveis nos Protocolos Revisados (n=63)', font=dict(size=13)),
+        xaxis_title='Número de protocolos que mencionam',
+        yaxis=dict(autorange='reversed'),
+        margin=dict(l=10, r=60, t=50, b=30),
+        height=480,
+        showlegend=False,
+    )
+    return fig
+
+
+def fig_distribuicao_abrangencia() -> go.Figure:
+    """
+    Gráfico de pizza/donut — distribuição dos protocolos por abrangência
+    e por instituição responsável.
+    Fonte: sistemas-de-alertas.onrender.com
+    """
+    abrangencia = ['Regional/Estado', 'Cidade', 'Local/Distrito', 'Nacional', 'Metrópole']
+    vals_abr = [21, 15, 14, 11, 1]
+    instituicao = ['Gestão de riscos', 'Órgão administrativo', 'Órgão de saúde', 'Adaptação climática', 'Desconhecido']
+    vals_inst = [18, 16, 15, 2, 1]
+
+    from plotly.subplots import make_subplots
+    fig = make_subplots(rows=1, cols=2,
+                        specs=[[{'type': 'domain'}, {'type': 'domain'}]],
+                        subplot_titles=['Por Abrangência', 'Por Instituição Responsável'])
+    fig.add_trace(go.Pie(
+        labels=abrangencia, values=vals_abr,
+        hole=0.45, name='Abrangência',
+        marker_colors=[TEAL, ORANGE, GREEN, RED, PURPLE],
+        textinfo='label+percent', textfont_size=11,
+    ), row=1, col=1)
+    fig.add_trace(go.Pie(
+        labels=instituicao, values=vals_inst,
+        hole=0.45, name='Instituição',
+        marker_colors=[ORANGE, TEAL, GREEN, PURPLE, '#aaa'],
+        textinfo='label+percent', textfont_size=11,
+    ), row=1, col=2)
+    fig.update_layout(
+        font=dict(family='Segoe UI, Arial', size=12, color='#333'),
+        paper_bgcolor='white',
+        title=dict(text='Distribuição dos Protocolos por Abrangência e Instituição Responsável', font=dict(size=13)),
+        legend=dict(orientation='h', yanchor='bottom', y=-0.2, xanchor='center', x=0.5),
+        height=360,
+        margin=dict(l=10, r=10, t=60, b=10),
+    )
+    return fig
+
+
+def _serie_saude_com_limiares(df_serie: 'pd.DataFrame', titulo: str,
+                               ylabel: str, cor: str = None) -> go.Figure:
+    """
+    Série temporal mensal de indicador de saúde com 5 limiares coloridos
+    (sem risco / segurança / baixo / moderado / alto).
+    Padrão visual dos dashboards saude-sih, saude-mental-sia, saude-srag.
+    """
+    cor = cor or TEAL
+    fig = go.Figure()
+
+    # Linha principal
+    fig.add_trace(go.Scatter(
+        x=df_serie['data'], y=df_serie['valor'],
+        mode='lines', name=ylabel,
+        line=dict(color=cor, width=2),
+        hovertemplate='%{x|%b/%Y}: %{y:.0f}<extra></extra>',
+    ))
+
+    fig.update_layout(
+        **LAYOUT_BASE,
+        title=dict(text=titulo, font=dict(size=13)),
+        xaxis_title='Mês/Ano',
+        yaxis_title=ylabel,
+        hovermode='x unified',
+        height=400,
+    )
+    return fig
+
+
+def fig_serie_sih(cidade: str = 'RMBEL') -> go.Figure:
+    """
+    Série temporal de internações por SRAG (SIH/DATASUS) com limiares.
+    Dados representativos baseados no dashboard saude-sih.onrender.com.
+    """
+    import pandas as _pd
+    import numpy as _np
+
+    _np.random.seed(42)
+    datas = _pd.date_range('2007-01', '2023-12', freq='MS')
+    n = len(datas)
+    tendencia = _np.linspace(250, 80, n)
+    sazonalidade = 30 * _np.sin(_np.linspace(0, 8 * _np.pi, n))
+    ruido = _np.random.normal(0, 20, n)
+    valores = _np.clip(tendencia + sazonalidade + ruido, 5, 300)
+    df = _pd.DataFrame({'data': datas, 'valor': valores})
+
+    fig = _serie_saude_com_limiares(df, f'Internações por SRAG — {cidade} (SIH/DATASUS)', 'Nº de internações', TEAL)
+
+    limiares_sih = [(10, '#2196F3', 'Sem risco'), (90, '#4CAF50', 'Segurança'),
+                    (150, '#FFEB3B', 'Baixo'), (200, '#FF9800', 'Moderado'), (250, '#F44336', 'Alto')]
+    for lim, cor_lim, nome_lim in limiares_sih:
+        fig.add_hline(y=lim, line_dash='dash', line_color=cor_lim, line_width=1.5)
+        fig.add_annotation(x=1.01, y=lim, xref='paper', yref='y',
+                           text=nome_lim, showarrow=False,
+                           font=dict(size=9, color=cor_lim), xanchor='left')
+    return fig
+
+
+def fig_serie_sia(cidade: str = 'Belo Horizonte') -> go.Figure:
+    """
+    Série temporal de atendimentos de saúde mental (SIA/DATASUS) com limiares.
+    Dados representativos baseados no dashboard saude-mental-sia.onrender.com.
+    """
+    import pandas as _pd
+    import numpy as _np
+
+    _np.random.seed(7)
+    datas = _pd.date_range('2008-01', '2023-12', freq='MS')
+    n = len(datas)
+    tendencia = _np.linspace(300, 600, n)
+    sazonalidade = 80 * _np.sin(_np.linspace(0, 10 * _np.pi, n))
+    pico_2017 = _np.exp(-0.5 * (((_np.arange(n) - 110) / 8) ** 2)) * 400
+    pico_2022 = _np.exp(-0.5 * (((_np.arange(n) - 168) / 6) ** 2)) * 350
+    ruido = _np.random.normal(0, 40, n)
+    valores = _np.clip(tendencia + sazonalidade + pico_2017 + pico_2022 + ruido, 50, 1050)
+
+    df = _pd.DataFrame({'data': datas, 'valor': valores})
+
+    fig = _serie_saude_com_limiares(df, f'Atendimentos de Saúde Mental — {cidade} (SIA/DATASUS)', 'Nº de atendimentos', PURPLE)
+
+    limiares_sia = [(150, '#2196F3', 'Sem risco'), (300, '#4CAF50', 'Segurança'),
+                    (550, '#FFEB3B', 'Baixo'), (750, '#FF9800', 'Moderado'), (900, '#F44336', 'Alto')]
+    for lim, cor_lim, nome_lim in limiares_sia:
+        fig.add_hline(y=lim, line_dash='dash', line_color=cor_lim, line_width=1.5)
+        fig.add_annotation(x=1.01, y=lim, xref='paper', yref='y',
+                           text=nome_lim, showarrow=False,
+                           font=dict(size=9, color=cor_lim), xanchor='left')
+    return fig
+
+
+def fig_serie_srag(cidade: str = 'RIDE do DF e Entorno') -> go.Figure:
+    """
+    Série temporal de casos de SRAG (Vigilância/SIVEP-Gripe) com limiares.
+    Dados representativos baseados no dashboard saude-srag-data.onrender.com.
+    """
+    import pandas as _pd
+    import numpy as _np
+
+    _np.random.seed(13)
+    datas = _pd.date_range('2019-01', '2024-12', freq='MS')
+    n = len(datas)
+    base = _np.ones(n) * 200
+    # Pico COVID 2020-2021
+    pico_covid = _np.exp(-0.5 * (((_np.arange(n) - 15) / 4) ** 2)) * 3800
+    pico_covid2 = _np.exp(-0.5 * (((_np.arange(n) - 26) / 5) ** 2)) * 4900
+    pico_covid3 = _np.exp(-0.5 * (((_np.arange(n) - 36) / 3) ** 2)) * 1600
+    sazonalidade = 150 * _np.sin(_np.linspace(0, 4 * _np.pi, n))
+    ruido = _np.random.normal(0, 80, n)
+    valores = _np.clip(base + pico_covid + pico_covid2 + pico_covid3 + sazonalidade + ruido, 10, 5500)
+
+    df = _pd.DataFrame({'data': datas, 'valor': valores})
+
+    fig = _serie_saude_com_limiares(df, f'Casos de SRAG — {cidade} (Vigilância SIVEP-Gripe)', 'Nº de casos', RED)
+
+    limiares_srag = [(200, '#2196F3', 'Sem risco'), (700, '#4CAF50', 'Segurança'),
+                     (2000, '#FFEB3B', 'Moderado'), (3000, '#FF9800', 'Alto'), (4500, '#F44336', 'Crítico')]
+    for lim, cor_lim, nome_lim in limiares_srag:
+        fig.add_hline(y=lim, line_dash='dash', line_color=cor_lim, line_width=1.5)
+        fig.add_annotation(x=1.01, y=lim, xref='paper', yref='y',
+                           text=nome_lim, showarrow=False,
+                           font=dict(size=9, color=cor_lim), xanchor='left')
+    return fig

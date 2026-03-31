@@ -790,3 +790,108 @@ def fig_serie_srag(cidade: str = 'RIDE do DF e Entorno') -> go.Figure:
                            text=nome_lim, showarrow=False,
                            font=dict(size=9, color=cor_lim), xanchor='left')
     return fig
+
+
+def _hex_to_rgba(hex_color: str, alpha: float = 0.2) -> str:
+    """Converte cor hex para rgba string."""
+    h = hex_color.lstrip('#')
+    r, g, b = int(h[0:2],16), int(h[2:4],16), int(h[4:6],16)
+    return f'rgba({r},{g},{b},{alpha})'
+
+
+def fig_polar_comparativo(freq_dict: dict, ano_label: str = 'Todos') -> go.Figure:
+    """Gráfico polar com múltiplas RMs sobrepostas para comparação."""
+    meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+    CORES = [TEAL, ORANGE, RED, GREEN, PURPLE, BROWN, '#e91e63', '#ff9800', '#4caf50', '#9c27b0', '#00bcd4', '#ff5722', '#607d8b', '#795548', '#009688']
+
+    fig = go.Figure()
+    for i, (cidade, freq_df) in enumerate(freq_dict.items()):
+        counts = [float(v) for v in freq_df['count'].tolist()]
+        counts_circ = counts + [counts[0]]
+        meses_circ  = meses + [meses[0]]
+        cor = CORES[i % len(CORES)]
+        fig.add_trace(go.Scatterpolar(
+            r=counts_circ, theta=meses_circ,
+            fill='toself', name=cidade,
+            line=dict(color=cor, width=2),
+            fillcolor=_hex_to_rgba(cor, 0.18),
+            opacity=0.9,
+            hovertemplate=f'<b>{cidade}</b><br>%{{theta}}: %{{r:.0f}} dias<extra></extra>'
+        ))
+    titulo = f'Frequência Mensal de OC — Comparação entre RMs ({ano_label})'
+    layout = {k: v for k, v in LAYOUT_BASE.items() if k != 'legend'}
+    fig.update_layout(
+        **layout,
+        title=dict(text=titulo, font=dict(size=13)),
+        polar=dict(
+            radialaxis=dict(visible=True, color='#aaa'),
+            angularaxis=dict(direction='clockwise')
+        ),
+        height=520,
+        margin=dict(l=40, r=40, t=60, b=60),
+        legend=dict(orientation='h', yanchor='top', y=-0.05, xanchor='center', x=0.5, font=dict(size=11)),
+    )
+    return fig
+
+
+def fig_polar_multiplos(freq_dict: dict, ano_label: str = 'Todos') -> go.Figure:
+    """Pequenos múltiplos de gráficos polares — um por RM, meses no eixo, intensidade EHF no valor."""
+    from plotly.subplots import make_subplots
+    import math
+
+    cidades = list(freq_dict.keys())
+    n = len(cidades)
+    cols = min(4, n)
+    rows = math.ceil(n / cols)
+    CORES = [TEAL, ORANGE, RED, GREEN, PURPLE, BROWN, '#e91e63', '#ff9800', '#4caf50', '#9c27b0', '#00bcd4', '#ff5722', '#607d8b', '#795548', '#009688']
+
+    specs = [[{'type': 'polar'} for _ in range(cols)] for _ in range(rows)]
+    subplot_titles = [c for c in cidades]
+    # Preencher títulos vazios se necessário
+    while len(subplot_titles) < rows * cols:
+        subplot_titles.append('')
+
+    fig = make_subplots(
+        rows=rows, cols=cols,
+        specs=specs,
+        subplot_titles=subplot_titles,
+    )
+    meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+
+    for i, (cidade, freq_df) in enumerate(freq_dict.items()):
+        row = i // cols + 1
+        col = i % cols + 1
+        counts = freq_df['count'].tolist()
+        counts_circ = counts + [counts[0]]
+        meses_circ  = meses + [meses[0]]
+        cor = CORES[i % len(CORES)]
+        fig.add_trace(
+            go.Scatterpolar(
+                r=counts_circ, theta=meses_circ,
+                fill='toself', name=cidade,
+                line=dict(color=cor, width=2),
+                fillcolor=_hex_to_rgba(cor, 0.25),
+                showlegend=False,
+                hovertemplate=f'<b>{cidade}</b><br>%{{theta}}: %{{r:.0f}} dias<extra></extra>'
+            ),
+            row=row, col=col
+        )
+
+    # Atualizar todos os eixos polares
+    for i in range(1, n + 1):
+        polar_key = f'polar{i}' if i > 1 else 'polar'
+        fig.update_layout(**{polar_key: dict(
+            radialaxis=dict(visible=True, color='#aaa', showticklabels=False),
+            angularaxis=dict(direction='clockwise'),
+        )})
+
+    altura = max(400, rows * 260)
+    layout = {k: v for k, v in LAYOUT_BASE.items() if k != 'legend'}
+    fig.update_layout(
+        **layout,
+        title=dict(text=f'Frequência Mensal de OC por RM — {ano_label}', font=dict(size=13)),
+        height=altura,
+        margin=dict(l=20, r=20, t=60, b=20),
+        showlegend=False,
+    )
+    return fig

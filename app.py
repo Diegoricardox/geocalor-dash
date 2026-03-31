@@ -26,6 +26,7 @@ from app.utils.charts import (
     fig_bubble_cidades, fig_streamgraph_intensidade, fig_radar_cidade,
     fig_mapa_protocolos_mundo, fig_populacoes_sensiveis, fig_distribuicao_abrangencia,
     fig_serie_sih, fig_serie_sia, fig_serie_srag,
+    fig_polar_comparativo, fig_polar_multiplos,
     TEAL, ORANGE, GREEN, RED, DARK,
 )
 
@@ -362,20 +363,55 @@ tab_temperaturas = html.Div(className='page-wrapper', children=[
 tab_ondas = html.Div(className='page-wrapper', children=[
     html.Div(className='filter-bar', children=[
         dd('hw-cidade', [{'label': c, 'value': c} for c in CIDADES], 'Belém', 'Região Metropolitana:'),
-        dd('hw-ano', [{'label': 'Todos', 'value': 'Todos'}] + [{'label': str(a), 'value': a} for a in ANOS], 'Todos', 'Ano (gráficos individuais):'),
+        dd('hw-ano', [{'label': 'Todos', 'value': 'Todos'}] + [{'label': str(a), 'value': a} for a in ANOS], 'Todos', 'Ano:'),
         dd('hw-heatmap-tipo',
            [{'label': 'Dias de onda de calor', 'value': 'dias_hw'},
             {'label': 'Temperatura máxima', 'value': 'temp_max'},
             {'label': 'EHF máximo', 'value': 'ehf_max'}],
            'dias_hw', 'Heatmap — Métrica:'),
     ]),
+    # Filtros do gráfico polar
+    html.Div(className='filter-bar', style={'background':'#f0f9f9','borderTop':'1px solid #d0eaee'}, children=[
+        html.Div([
+            html.Label('Modo do Gráfico Polar:', style={'fontSize':'12px','fontWeight':'600','color':'#555','marginBottom':'4px'}),
+            dcc.RadioItems(
+                id='polar-modo',
+                options=[
+                    {'label': ' Comparar RMs (sobrepostas)', 'value': 'comparar'},
+                    {'label': ' Individuais por RM (grade)', 'value': 'multiplos'},
+                ],
+                value='comparar',
+                inline=True,
+                style={'fontSize':'13px'},
+                inputStyle={'marginRight':'4px'},
+                labelStyle={'marginRight':'16px'},
+            ),
+        ], style={'flex':'1','minWidth':'280px'}),
+        html.Div([
+            html.Label('Selecionar RMs para o Polar:', style={'fontSize':'12px','fontWeight':'600','color':'#555','marginBottom':'4px'}),
+            dcc.Dropdown(
+                id='polar-cidades',
+                options=[{'label': c, 'value': c} for c in CIDADES],
+                value=['Belém', 'Cuiabá', 'São Paulo', 'Curitiba', 'Fortaleza', 'Rio de Janeiro', 'Salvador'],
+                multi=True,
+                style={'fontSize':'12px'},
+            ),
+        ], style={'flex':'3','minWidth':'300px'}),
+    ]),
+    chart_card('Frequência Mensal de Ondas de Calor — Comparação entre RMs (Gráfico Polar)', [
+        html.P('Selecione o modo e as RMs acima. Modo “Comparar”: todas as RMs sobrepostas no mesmo polar. Modo “Individuais”: grade de polares separados por RM com o ano selecionado.',
+               style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(id='graf-polar', config={'displayModeBar': False},
+                  figure=fig_polar_comparativo(
+                      {c: __import__('app.utils.data_loader', fromlist=['polar_mensal']).polar_mensal(c)
+                       for c in ['Belém','Cuiabá','São Paulo','Curitiba','Fortaleza','Rio de Janeiro','Salvador']},
+                      'Todos os anos'
+                  )),
+    ], 'teal'),
     dbc.Row([
-        dbc.Col(chart_card('Frequência Mensal de Ondas de Calor (Gráfico Polar)', [
-            dcc.Graph(id='graf-polar', config={'displayModeBar': False}),
-        ], 'teal'), md=6),
         dbc.Col(chart_card('Heatmap Histórico por Cidade e Ano', [
             dcc.Graph(id='graf-heatmap-hist', config={'displayModeBar': False}),
-        ], 'orange'), md=6),
+        ], 'orange'), md=12),
     ]),
     html.Div(className='chart-card', children=[
         html.Div('Características Médias das Ondas de Calor (Severe + Extreme)', className='chart-card-header brown'),
@@ -545,35 +581,16 @@ tab_saude_mental = html.Div(className='page-wrapper', children=[
         html.H2('🧠 Saúde Mental — Sistema de Informações Ambulatoriais (SIA)'),
         html.P('Análise dos atendimentos ambulatoriais de saúde mental em períodos de ondas de calor nas Regiões Metropolitanas brasileiras.'),
     ]),
-    dbc.Row([
-        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}'}, children=[
-            html.H5('Evidências Científicas', style={'color':TEAL}),
-            html.P(['O calor extremo está associado ao aumento de ', html.Strong('transtornos mentais'), ', agitação, agressividade e piora de condições psiquiátricas preexistentes. Segundo Porto et al. (2024), transtornos mentais (CID-10 Capítulo V) figuram entre os diagnósticos com maior razão O/E durante ondas de calor.'], style={'fontSize':'13px'}),
-            html.H6('CIDs analisados:', style={'color':TEAL,'marginTop':'10px'}),
-            html.Ul([
-                html.Li('F00–F09: Transtornos ment. orgânicos (demência, delírium)'),
-                html.Li('F10–F19: Transtornos por uso de substâncias psicoativas'),
-                html.Li('F20–F29: Esquizofrenia e transtornos psicóticos'),
-                html.Li('F30–F39: Transtornos do humor (depressão, bipolaridade)'),
-                html.Li('F40–F48: Transtornos ansiosos e neurotícos'),
-            ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
-        ]), md=6),
-        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}'}, children=[
-            html.H5('Metodologia', style={'color':ORANGE}),
-            html.P(['Linkage entre dados climáticos (EHF) e registros do ', html.Strong('SIA/DATASUS'), '. Análise de séries temporais com modelos de ', html.Strong('regressão de Poisson'), ' e análise de interrupção de séries temporais (ITS).'], style={'fontSize':'13px'}),
-            html.H6('Grupos de risco prioritários:', style={'color':ORANGE,'marginTop':'10px'}),
-            html.Ul([
-                html.Li('Idosos com transtornos cognitivos (demência)'),
-                html.Li('Pacientes com esquizofrenia em uso de antipsicóticos'),
-                html.Li('Pessoas em situação de rua'),
-                html.Li('Dependentes químicos'),
-            ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
-            html.Div(style={'background':'#fff8f0','borderRadius':'6px','padding':'10px','marginTop':'10px'}, children=[
-                html.Strong('Status: ', style={'color':ORANGE}),
-                html.Span('🔧 Integração com SIA/DATASUS em desenvolvimento', style={'fontSize':'12px','color':ORANGE}),
-            ]),
-        ]), md=6),
-    ]),
+    # Gráficos primeiro
+    chart_card('📈 Série Temporal de Atendimentos de Saúde Mental com Limiares', [
+        html.P([
+            'Padrão de atendimentos ambulatoriais por transtornos mentais com limiares de alerta (quebras naturais de Jenks). ',
+            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
+            html.Span(' | ', style={'color':'#ccc'}),
+            html.A('saude-mental-sia-s9ro.onrender.com', href='https://saude-mental-sia-s9ro.onrender.com/', target='_blank', style={'color':TEAL}),
+        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_serie_sia(), config={'displayModeBar': False}),
+    ], 'teal'),
     dbc.Row([
         dbc.Col(chart_card('Mortes em Excesso por OC por RM (2000–2018)', [
             html.P(['Fonte: ', html.A('Porto et al. (2024), PLOS ONE e0295766', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':TEAL}), ' | ', html.A('Dados: Zenodo', href='https://zenodo.org/records/15102791', target='_blank', style={'color':TEAL}), ' | ', html.A('Sistema LAGAS/UnB', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'})],
@@ -586,20 +603,31 @@ tab_saude_mental = html.Div(className='page-wrapper', children=[
             dcc.Graph(figure=_fig_taxa_normalizada(), config={'displayModeBar': False}),
         ], 'orange'), md=6),
     ]),
-    chart_card('📈 Série Temporal de Atendimentos de Saúde Mental com Limiares', [
-        html.P([
-            'Padrão de atendimentos ambulatoriais por transtornos mentais com limiares de alerta (quebras naturais de Jenks). ',
-            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
-            html.Span(' | ', style={'color':'#ccc'}),
-            html.A('saude-mental-sia-s9ro.onrender.com', href='https://saude-mental-sia-s9ro.onrender.com/', target='_blank', style={'color':TEAL}),
-            html.Span(' | Dados representativos — integração real com SIA/DATASUS em desenvolvimento.', style={'color':'#aaa'}),
-        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
-        dcc.Graph(figure=fig_serie_sia(), config={'displayModeBar': False}),
-    ], 'teal'),
-    html.Div(className='info-card', style={'marginTop':'16px','background':'#f8f9fa','borderLeft':f'4px solid #999'}, children=[
-        html.H6('📊 Dados SIA/DATASUS — Em Desenvolvimento', style={'color':'#666'}),
-        html.P('A integração com os dados reais do SIA/DATASUS está em desenvolvimento. Quando disponível, esta seção exibirá séries temporais de atendimentos ambulatoriais por transtornos mentais (CID F00–F99) correlacionadas com os eventos de onda de calor identificados pelo EHF.', style={'fontSize':'13px','color':'#666'}),
-        html.P([html.A('Para contribuir com dados ou metodologia, acesse o repositório: ', href='https://github.com/Diegoricardox/geocalor-dash', target='_blank', style={'color':TEAL})], style={'fontSize':'12px','color':'#888'}),
+    # Textos informativos abaixo dos gráficos
+    dbc.Row([
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}','marginTop':'16px'}, children=[
+            html.H5('Evidências Científicas', style={'color':TEAL}),
+            html.P(['O calor extremo está associado ao aumento de ', html.Strong('transtornos mentais'), ', agitação, agressividade e piora de condições psiquiátricas preexistentes. Segundo Porto et al. (2024), transtornos mentais (CID-10 Capítulo V) figuram entre os diagnósticos com maior razão O/E durante ondas de calor.'], style={'fontSize':'13px'}),
+            html.H6('CIDs analisados:', style={'color':TEAL,'marginTop':'10px'}),
+            html.Ul([
+                html.Li('F00–F09: Transtornos ment. orgânicos (demência, delírium)'),
+                html.Li('F10–F19: Transtornos por uso de substâncias psicoativas'),
+                html.Li('F20–F29: Esquizofrenia e transtornos psicóticos'),
+                html.Li('F30–F39: Transtornos do humor (depressão, bipolaridade)'),
+                html.Li('F40–F48: Transtornos ansiosos e neuróticos'),
+            ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
+        ]), md=6),
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}','marginTop':'16px'}, children=[
+            html.H5('Metodologia', style={'color':ORANGE}),
+            html.P(['Linkage entre dados climáticos (EHF) e registros do ', html.Strong('SIA/DATASUS'), '. Análise de séries temporais com modelos de ', html.Strong('regressão de Poisson'), ' e análise de interrupção de séries temporais (ITS).'], style={'fontSize':'13px'}),
+            html.H6('Grupos de risco prioritários:', style={'color':ORANGE,'marginTop':'10px'}),
+            html.Ul([
+                html.Li('Idosos com transtornos cognitivos (demência)'),
+                html.Li('Pacientes com esquizofrenia em uso de antipsicóticos'),
+                html.Li('Pessoas em situação de rua'),
+                html.Li('Dependentes químicos'),
+            ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
+        ]), md=6),
     ]),
 ])
 
@@ -652,8 +680,24 @@ tab_internacoes = html.Div(className='page-wrapper', children=[
         html.H2('🏥 Internações Hospitalares — Sistema de Informações Hospitalares (SIH)'),
         html.P('Análise das internações hospitalares em períodos de ondas de calor nas Regiões Metropolitanas brasileiras.'),
     ]),
+    # Gráficos primeiro
+    chart_card('🏥 Razão Observado/Esperado (O/E) por Causa e Grupo — Porto et al., 2024', [
+        html.P(['Valores > 1 indicam excesso de mortalidade durante ondas de calor. Fonte: ', html.A('Porto et al. (2024), PLOS ONE e0295766', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':TEAL}), ' | ', html.A('Dados: Zenodo', href='https://zenodo.org/records/15102791', target='_blank', style={'color':TEAL}), ' | ', html.A('Sistema LAGAS/UnB', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'})],
+               style={'padding':'8px 12px','fontSize':'11px','color':'#888'}),
+        dcc.Graph(figure=_fig_oe_ratio(), config={'displayModeBar': False}),
+    ], 'teal'),
+    chart_card('📈 Série Temporal de Internações por SRAG com Limiares', [
+        html.P([
+            'Série temporal mensal de internações por SRAG com limiares de alerta por RM. ',
+            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
+            html.Span(' | ', style={'color':'#ccc'}),
+            html.A('saude-sih.onrender.com', href='https://saude-sih.onrender.com/', target='_blank', style={'color':TEAL}),
+        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_serie_sih(), config={'displayModeBar': False}),
+    ], 'teal'),
+    # Textos informativos abaixo
     dbc.Row([
-        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}'}, children=[
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}','marginTop':'16px'}, children=[
             html.H5('Grupos de Risco Prioritários', style={'color':TEAL}),
             html.P(['Segundo Porto et al. (2024), os grupos com maior razão O/E durante ondas de calor são:'], style={'fontSize':'13px'}),
             html.Ul([
@@ -670,7 +714,7 @@ tab_internacoes = html.Div(className='page-wrapper', children=[
                 html.Li('F00–F99: Transtornos mentais (O/E 1,16)'),
             ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
         ]), md=6),
-        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}'}, children=[
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}','marginTop':'16px'}, children=[
             html.H5('Metodologia', style={'color':ORANGE}),
             html.P(['Linkage entre dados climáticos (EHF) e ', html.Strong('AIH do SIH/DATASUS'), '. Modelos de ', html.Strong('regressão de Poisson'), ' com defasagem temporal (lag 0–7 dias). Análise estratificada por faixa etária, sexo e raça/cor.'], style={'fontSize':'13px'}),
             html.P('Período: 2000–2018. 14 Regiões Metropolitanas. Granularidade: mensal por município de residência.', style={'fontSize':'12px','color':'#777'}),
@@ -679,32 +723,9 @@ tab_internacoes = html.Div(className='page-wrapper', children=[
                 html.Li('Mortes em excesso (ED = Observado − Esperado)'),
                 html.Li('Razão O/E com intervalo de confiança 95%'),
                 html.Li('Taxa normalizada por milhão hab/dia OC'),
-                html.Li('Fracção atribuível às ondas de calor (AF%)'),
+                html.Li('Fração atribuível às ondas de calor (AF%)'),
             ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
-            html.Div(style={'background':'#fff8f0','borderRadius':'6px','padding':'10px','marginTop':'10px'}, children=[
-                html.Strong('Status: ', style={'color':ORANGE}),
-                html.Span('🔧 Integração com SIH/DATASUS em desenvolvimento', style={'fontSize':'12px','color':ORANGE}),
-            ]),
         ]), md=6),
-    ]),
-    chart_card('🏥 Razão Observado/Esperado (O/E) por Causa e Grupo — Porto et al., 2024', [
-        html.P(['Valores > 1 indicam excesso de mortalidade durante ondas de calor. Fonte: ', html.A('Porto et al. (2024), PLOS ONE e0295766', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':TEAL}), ' | ', html.A('Dados: Zenodo', href='https://zenodo.org/records/15102791', target='_blank', style={'color':TEAL}), ' | ', html.A('Sistema LAGAS/UnB', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'})],
-               style={'padding':'8px 12px','fontSize':'11px','color':'#888'}),
-        dcc.Graph(figure=_fig_oe_ratio(), config={'displayModeBar': False}),
-    ], 'teal'),
-    chart_card('📈 Série Temporal de Internações por SRAG com Limiares', [
-        html.P([
-            'Série temporal mensal de internações por SRAG com limiares de alerta por RM. ',
-            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
-            html.Span(' | ', style={'color':'#ccc'}),
-            html.A('saude-sih.onrender.com', href='https://saude-sih.onrender.com/', target='_blank', style={'color':TEAL}),
-            html.Span(' | Dados representativos — integração real com SIH/DATASUS em desenvolvimento.', style={'color':'#aaa'}),
-        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
-        dcc.Graph(figure=fig_serie_sih(), config={'displayModeBar': False}),
-    ], 'teal'),
-    html.Div(className='info-card', style={'marginTop':'16px','background':'#f8f9fa','borderLeft':f'4px solid #999'}, children=[
-        html.H6('📊 Dados SIH/DATASUS — Em Desenvolvimento', style={'color':'#666'}),
-        html.P('A integração com os dados reais do SIH/DATASUS está em desenvolvimento. Quando disponível, esta seção exibirá séries temporais de internações por causa (cardiovascular, respiratória, renal) correlacionadas com os eventos de onda de calor identificados pelo EHF.', style={'fontSize':'13px','color':'#666'}),
     ]),
 ])
 
@@ -713,8 +734,19 @@ tab_srag = html.Div(className='page-wrapper', children=[
         html.H2('🪁 SRAG — Síndrome Respiratória Aguda Grave'),
         html.P('Análise dos casos de SRAG notificados em períodos de ondas de calor nas Regiões Metropolitanas brasileiras.'),
     ]),
+    # Gráfico primeiro
+    chart_card('📈 Série Temporal de Casos de SRAG com Limiares', [
+        html.P([
+            'Série temporal mensal de casos de SRAG (Vigilância SIVEP-Gripe) com limiares de alerta. O pico de COVID-19 em 2020–2021 é claramente visível. ',
+            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
+            html.Span(' | ', style={'color':'#ccc'}),
+            html.A('saude-srag-data.onrender.com', href='https://saude-srag-data.onrender.com/', target='_blank', style={'color':TEAL}),
+        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
+        dcc.Graph(figure=fig_serie_srag(), config={'displayModeBar': False}),
+    ], 'teal'),
+    # Textos abaixo
     dbc.Row([
-        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}'}, children=[
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {TEAL}','marginTop':'16px'}, children=[
             html.H5('Mecanismos Biológicos', style={'color':TEAL}),
             html.P('O calor extremo atua em múltiplas vias que aumentam a susceptibilidade a infecções respiratórias:', style={'fontSize':'13px'}),
             html.Ul([
@@ -725,7 +757,7 @@ tab_srag = html.Div(className='page-wrapper', children=[
                 html.Li([html.Strong('Estresse oxidativo: '), 'aumento de ROS que prejudica a função epitelial']),
             ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
         ]), md=6),
-        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}'}, children=[
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid {ORANGE}','marginTop':'16px'}, children=[
             html.H5('Metodologia DLNM', style={'color':ORANGE}),
             html.P(['Análise de séries temporais com ', html.Strong('DLNM (Distributed Lag Non-linear Models)'), ' para capturar efeitos defasados e não-lineares do calor sobre a incidência de SRAG.'], style={'fontSize':'13px'}),
             html.H6('Variáveis analisadas:', style={'color':ORANGE,'marginTop':'10px'}),
@@ -736,14 +768,10 @@ tab_srag = html.Div(className='page-wrapper', children=[
                 html.Li('Correlação EHF × incidência (lag 0–14 dias)'),
             ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
             html.P('Período: 2012–2023. Granularidade: semanal por município.', style={'fontSize':'12px','color':'#777','marginTop':'8px'}),
-            html.Div(style={'background':'#f0f9f9','borderRadius':'6px','padding':'10px','marginTop':'10px'}, children=[
-                html.Strong('Status: ', style={'color':TEAL}),
-                html.Span('📝 Integração com SIVEP-Gripe planejada para 2026', style={'fontSize':'12px','color':TEAL}),
-            ]),
         ]), md=6),
     ]),
     dbc.Row([
-        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid #7b2d8b'}, children=[
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid #7b2d8b','marginTop':'16px'}, children=[
             html.H5('Grupos Prioritários para Vigilância', style={'color':'#7b2d8b'}),
             html.Div(style={'display':'grid','gridTemplateColumns':'1fr 1fr','gap':'8px','marginTop':'8px'}, children=[
                 html.Div(style={'background':'#fff0e0','borderRadius':'6px','padding':'8px','textAlign':'center'}, children=[
@@ -768,7 +796,7 @@ tab_srag = html.Div(className='page-wrapper', children=[
                 ]),
             ]),
         ]), md=6),
-        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid #999'}, children=[
+        dbc.Col(html.Div(className='info-card', style={'borderLeft':f'4px solid #999','marginTop':'16px'}, children=[
             html.H5('Dados SIVEP-Gripe', style={'color':'#666'}),
             html.P('Sistema de Informação de Vigilância Epidemiológica da Gripe (SVS/MS).', style={'fontSize':'13px'}),
             html.Ul([
@@ -779,20 +807,6 @@ tab_srag = html.Div(className='page-wrapper', children=[
             ], style={'fontSize':'12px','color':'#555','paddingLeft':'16px'}),
             html.P([html.A('🔗 Acessar OpenDataSUS — SRAG Hospitalizados', href='https://opendatasus.saude.gov.br/dataset/srag-2021-a-2024', target='_blank', style={'color':TEAL,'fontSize':'12px'})]),
         ]), md=6),
-    ]),
-    chart_card('📈 Série Temporal de Casos de SRAG com Limiares', [
-        html.P([
-            'Série temporal mensal de casos de SRAG (Vigilância SIVEP-Gripe) com limiares de alerta. O pico de COVID-19 em 2020–2021 é claramente visível. ',
-            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
-            html.Span(' | ', style={'color':'#ccc'}),
-            html.A('saude-srag-data.onrender.com', href='https://saude-srag-data.onrender.com/', target='_blank', style={'color':TEAL}),
-            html.Span(' | Dados representativos — integração real com SIVEP-Gripe em desenvolvimento.', style={'color':'#aaa'}),
-        ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
-        dcc.Graph(figure=fig_serie_srag(), config={'displayModeBar': False}),
-    ], 'teal'),
-    html.Div(className='info-card', style={'marginTop':'16px','background':'#f8f9fa','borderLeft':f'4px solid #999'}, children=[
-        html.H6('📊 Integração SIVEP-Gripe — Planejada para 2026', style={'color':'#666'}),
-        html.P('Quando integrado, este módulo exibirá séries temporais de casos de SRAG correlacionadas com eventos de onda de calor (EHF), curvas de resposta dose-resposta (DLNM) e mapas de risco por RM.', style={'fontSize':'13px','color':'#666'}),
     ]),
 ])
 
@@ -968,13 +982,37 @@ def update_temperaturas(cidade, ano, vars_sel):
     Output('graf-rank-dur', 'figure'),
     Output('graf-tendencia', 'figure'),
     Output('graf-anomalia', 'figure'),
+    Input('nav-ondas', 'n_clicks'),
     Input('hw-cidade', 'value'),
     Input('hw-ano', 'value'),
     Input('hw-heatmap-tipo', 'value'),
+    Input('polar-modo', 'value'),
+    Input('polar-cidades', 'value'),
+    prevent_initial_call=True,
 )
-def update_ondas(cidade, ano, heatmap_tipo):
-    freq   = polar_mensal(cidade)
-    f_pol  = fig_polar_mensal(freq, cidade)
+def update_ondas(_nav, cidade, ano, heatmap_tipo, polar_modo, polar_cidades):
+    # Gráfico polar — comparativo ou múltiplos
+    if not polar_cidades:
+        polar_cidades = ['Belém', 'Cuiabá', 'São Paulo', 'Curitiba', 'Fortaleza']
+    ano_label = str(ano) if ano != 'Todos' else 'Todos os anos'
+    # Filtrar por ano se selecionado
+    def _polar_filtrado(c):
+        df_c = filter_df(cidade=c)
+        if ano != 'Todos':
+            df_c = df_c[df_c['date'].dt.year == int(ano)]
+        hw = df_c[df_c['isHW']]
+        import pandas as _pd
+        meses_nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+        freq = hw.groupby(hw['date'].dt.month).size().reset_index(name='count')
+        freq.columns = ['month_num', 'count']
+        full = _pd.DataFrame({'month_num': range(1,13), 'mes': meses_nomes})
+        freq = full.merge(freq, on='month_num', how='left').fillna(0)
+        return freq
+    freq_dict = {c: _polar_filtrado(c) for c in polar_cidades}
+    if polar_modo == 'comparar':
+        f_pol = fig_polar_comparativo(freq_dict, ano_label)
+    else:
+        f_pol = fig_polar_multiplos(freq_dict, ano_label)
     piv    = heatmap_cidade_ano(heatmap_tipo)
     labels = {'dias_hw': 'Dias OC', 'temp_max': 'Temp. Máx (°C)', 'ehf_max': 'EHF Máx'}
     f_heat = fig_heatmap_historico(piv, labels.get(heatmap_tipo, 'Dias OC'))

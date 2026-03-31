@@ -13,6 +13,17 @@ echo "║       GeoCalor Dash — Setup & Run        ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
 
+# 0. Atualizar código do repositório (git pull)
+if git rev-parse --is-inside-work-tree &>/dev/null; then
+    echo "🔄 Atualizando código do repositório..."
+    git config pull.rebase false
+    git pull origin main --allow-unrelated-histories 2>&1 | tail -3
+    echo "✅ Código atualizado"
+else
+    echo "⚠️  Não é um repositório git — pulando git pull"
+fi
+echo ""
+
 # 1. Verificar Python 3
 if ! command -v python3 &>/dev/null; then
     echo "❌ Python 3 não encontrado. Instale via: brew install python"
@@ -30,11 +41,11 @@ fi
 source venv/bin/activate
 echo "✅ Ambiente virtual ativado"
 
-# 4. Instalar dependências
-echo "📦 Instalando dependências..."
+# 4. Instalar/atualizar dependências
+echo "📦 Verificando dependências..."
 pip install -q --upgrade pip
 pip install -q -r requirements.txt
-echo "✅ Dependências instaladas"
+echo "✅ Dependências OK"
 
 # 5. Baixar dados se não existirem ou estiverem corrompidos
 mkdir -p data
@@ -62,7 +73,6 @@ if [ "$NEED_DOWNLOAD" = true ]; then
             --dir data \
             --clobber
     else
-        # Fallback: pedir token ao usuário
         echo ""
         echo "⚠️  gh CLI não encontrado ou não autenticado."
         echo "   Para baixar os dados, você tem duas opções:"

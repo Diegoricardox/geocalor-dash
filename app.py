@@ -147,7 +147,14 @@ footer = html.Div(id='footer', children=[
         html.Img(src='/assets/fiocruz.jpg', style={'height':'28px','borderRadius':'4px'}),
     ]),
     html.Div([html.Strong('Desenvolvimento do painel: '), 'Diego Ricardo Xavier | OCS/ICICT/Fiocruz — 2026']),
-    html.Div('GeoCalor Dashboard Python | Dados: INMET/ICEA | Metodologia: EHF (Excess Heat Factor)'),
+    html.Div([
+        'GeoCalor Dashboard Python | Dados: INMET/ICEA | Metodologia: EHF | Referência: ',
+        html.A('Porto et al. (2024) PLOS ONE', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':'#aaa'}),
+        ' | ',
+        html.A('Zenodo', href='https://zenodo.org/records/15102791', target='_blank', style={'color':'#aaa'}),
+        ' | ',
+        html.A('Sistema LAGAS/UnB', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#aaa'}),
+    ]),
 ])
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -239,12 +246,20 @@ tab_sobre = html.Div(className='page-wrapper', children=[
             html.P([html.Strong('Fontes dos dados: '), 'Instituto Nacional de Meteorologia (INMET) e Instituto de Controle do Espaço Aéreo (ICEA).']),
         ]), md=6),
         dbc.Col(html.Div(className='info-card', children=[
-            html.H5('Artigo de Referência', style={'color':ORANGE}),
-            html.Div(style={'background':'#fff8f0','borderRadius':'8px','padding':'14px','borderLeft':f'4px solid {ORANGE}','marginBottom':'12px'}, children=[
+            html.H5('Referências do Projeto', style={'color':ORANGE}),
+            html.Div(style={'background':'#fff8f0','borderRadius':'8px','padding':'14px','borderLeft':f'4px solid {ORANGE}','marginBottom':'10px'}, children=[
                 html.P([html.Strong('Porto, B. et al.'), ' (2024). Heat waves and health impacts in Brazilian metropolitan regions: A comprehensive analysis of frequency, intensity, and excess mortality. ', html.Em('PLOS ONE'), ', 19(1), e0295766.'], style={'fontSize':'13px','color':'#333','margin':'0 0 8px'}),
-                html.A('🔗 Acessar artigo completo (PLOS ONE)', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':ORANGE,'fontSize':'13px','fontWeight':'600'}),
+                html.A('🔗 Acessar artigo (PLOS ONE)', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':ORANGE,'fontSize':'13px','fontWeight':'600'}),
             ]),
-            html.H6('Principais resultados do estudo:', style={'color':ORANGE,'marginTop':'12px'}),
+            html.Div(style={'background':'#f0f9f9','borderRadius':'8px','padding':'14px','borderLeft':f'4px solid {TEAL}','marginBottom':'10px'}, children=[
+                html.P([html.Strong('Porto, B. et al.'), ' (2025). Comportamento das ondas de calor em capitais brasileiras através do fator de excesso de calor. ', html.Em('Zenodo'), '.'], style={'fontSize':'13px','color':'#333','margin':'0 0 8px'}),
+                html.A('🔗 Acessar dados e código (Zenodo)', href='https://zenodo.org/records/15102791', target='_blank', style={'color':TEAL,'fontSize':'13px','fontWeight':'600'}),
+            ]),
+            html.Div(style={'background':'#f0f5ff','borderRadius':'8px','padding':'14px','borderLeft':'4px solid #3b5bdb','marginBottom':'10px'}, children=[
+                html.P([html.Strong('LAGAS/UnB'), ' (2026). Dashboard de Ondas de Calor e Saúde — GeoCalor. Laboratório de Geoprocessamento Aplicado à Saúde, Universidade de Brasília.'], style={'fontSize':'13px','color':'#333','margin':'0 0 8px'}),
+                html.A('🔗 Acessar sistema completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb','fontSize':'13px','fontWeight':'600'}),
+            ]),
+            html.H6('Principais resultados (Porto et al., 2024):', style={'color':ORANGE,'marginTop':'12px'}),
             html.Ul([
                 html.Li('48.075 mortes em excesso estimadas em 14 RMs brasileiras (2000–2018)', style={'fontSize':'12px','color':'#555','marginBottom':'4px'}),
                 html.Li('Tendência crescente de frequência de OC em todas as RMs analisadas', style={'fontSize':'12px','color':'#555','marginBottom':'4px'}),
@@ -252,10 +267,6 @@ tab_sobre = html.Div(className='page-wrapper', children=[
                 html.Li('Rio de Janeiro, Porto Alegre, Belém, Cuiabá e Recife: maiores taxas de mortalidade normalizada', style={'fontSize':'12px','color':'#555','marginBottom':'4px'}),
                 html.Li('OC de baixa intensidade precedidas por outra OC (intervalo < 2 semanas) causam maior impacto na mortalidade', style={'fontSize':'12px','color':'#555'}),
             ], style={'paddingLeft':'16px'}),
-            html.Hr(),
-            html.P([html.Strong('Como Citar (Zenodo): ')], style={'fontSize':'12px'}),
-            html.P('PORTO, B. et al. Comportamento das ondas de calor em capitais brasileiras através do fator de excesso de calor. Zenodo, 2025.', style={'fontSize':'12px','color':'#555'}),
-            html.A('https://doi.org/10.5281/zenodo.15102791', href='https://doi.org/10.5281/zenodo.15102791', target='_blank', style={'color':TEAL,'fontSize':'12px'}),
         ]), md=6),
     ]),
     dbc.Row([
@@ -450,7 +461,9 @@ tab_alertas = html.Div(className='page-wrapper', children=[
     # Mapa mundial de protocolos
     chart_card('🌍 Distribuição Mundial dos Protocolos de Sistemas de Alerta (n=63, 18 países)', [
         html.P(['Revisão sistemática realizada pelo LAGAS/UnB em 2025. A Índia lidera com 23 documentos, fruto de esforço conjunto do governo nacional e estaduais. O Brasil possui 2 planos locais (Rio de Janeiro e São Paulo). ',
-                html.A('Acessar dashboard completo', href='https://sistemas-de-alertas.onrender.com/', target='_blank', style={'color':TEAL})],
+                html.A('Ver sistema completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
+                html.Span(' | ', style={'color':'#ccc'}),
+                html.A('sistemas-de-alertas.onrender.com', href='https://sistemas-de-alertas.onrender.com/', target='_blank', style={'color':TEAL})],
                style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(figure=fig_mapa_protocolos_mundo(), config={'displayModeBar': False}),
     ], 'teal'),
@@ -563,7 +576,7 @@ tab_saude_mental = html.Div(className='page-wrapper', children=[
     ]),
     dbc.Row([
         dbc.Col(chart_card('Mortes em Excesso por OC por RM (2000–2018)', [
-            html.P(['Fonte: Porto et al. (2024). ', html.A('PLOS ONE e0295766', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':TEAL})],
+            html.P(['Fonte: ', html.A('Porto et al. (2024), PLOS ONE e0295766', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':TEAL}), ' | ', html.A('Dados: Zenodo', href='https://zenodo.org/records/15102791', target='_blank', style={'color':TEAL}), ' | ', html.A('Sistema LAGAS/UnB', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'})],
                    style={'padding':'8px 12px','fontSize':'11px','color':'#888'}),
             dcc.Graph(figure=_fig_ed_barras(), config={'displayModeBar': False}),
         ], 'teal'), md=6),
@@ -576,7 +589,9 @@ tab_saude_mental = html.Div(className='page-wrapper', children=[
     chart_card('📈 Série Temporal de Atendimentos de Saúde Mental com Limiares', [
         html.P([
             'Padrão de atendimentos ambulatoriais por transtornos mentais com limiares de alerta (quebras naturais de Jenks). ',
-            html.A('Ver dashboard completo', href='https://saude-mental-sia-s9ro.onrender.com/', target='_blank', style={'color':TEAL}),
+            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
+            html.Span(' | ', style={'color':'#ccc'}),
+            html.A('saude-mental-sia-s9ro.onrender.com', href='https://saude-mental-sia-s9ro.onrender.com/', target='_blank', style={'color':TEAL}),
             html.Span(' | Dados representativos — integração real com SIA/DATASUS em desenvolvimento.', style={'color':'#aaa'}),
         ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(figure=fig_serie_sia(), config={'displayModeBar': False}),
@@ -673,14 +688,16 @@ tab_internacoes = html.Div(className='page-wrapper', children=[
         ]), md=6),
     ]),
     chart_card('🏥 Razão Observado/Esperado (O/E) por Causa e Grupo — Porto et al., 2024', [
-        html.P(['Valores > 1 indicam excesso de mortalidade durante ondas de calor. Fonte: ', html.A('Porto et al. (2024), PLOS ONE e0295766', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':TEAL})],
+        html.P(['Valores > 1 indicam excesso de mortalidade durante ondas de calor. Fonte: ', html.A('Porto et al. (2024), PLOS ONE e0295766', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':TEAL}), ' | ', html.A('Dados: Zenodo', href='https://zenodo.org/records/15102791', target='_blank', style={'color':TEAL}), ' | ', html.A('Sistema LAGAS/UnB', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'})],
                style={'padding':'8px 12px','fontSize':'11px','color':'#888'}),
         dcc.Graph(figure=_fig_oe_ratio(), config={'displayModeBar': False}),
     ], 'teal'),
     chart_card('📈 Série Temporal de Internações por SRAG com Limiares', [
         html.P([
             'Série temporal mensal de internações por SRAG com limiares de alerta por RM. ',
-            html.A('Ver dashboard completo', href='https://saude-sih.onrender.com/', target='_blank', style={'color':TEAL}),
+            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
+            html.Span(' | ', style={'color':'#ccc'}),
+            html.A('saude-sih.onrender.com', href='https://saude-sih.onrender.com/', target='_blank', style={'color':TEAL}),
             html.Span(' | Dados representativos — integração real com SIH/DATASUS em desenvolvimento.', style={'color':'#aaa'}),
         ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(figure=fig_serie_sih(), config={'displayModeBar': False}),
@@ -766,7 +783,9 @@ tab_srag = html.Div(className='page-wrapper', children=[
     chart_card('📈 Série Temporal de Casos de SRAG com Limiares', [
         html.P([
             'Série temporal mensal de casos de SRAG (Vigilância SIVEP-Gripe) com limiares de alerta. O pico de COVID-19 em 2020–2021 é claramente visível. ',
-            html.A('Ver dashboard completo', href='https://saude-srag-data.onrender.com/', target='_blank', style={'color':TEAL}),
+            html.A('Ver dashboard completo (LAGAS/UnB)', href='https://lagas.sites.homologa.unb.br/2026/03/17/dashboard-de-ondas-de-calor-e-saude/', target='_blank', style={'color':'#3b5bdb'}),
+            html.Span(' | ', style={'color':'#ccc'}),
+            html.A('saude-srag-data.onrender.com', href='https://saude-srag-data.onrender.com/', target='_blank', style={'color':TEAL}),
             html.Span(' | Dados representativos — integração real com SIVEP-Gripe em desenvolvimento.', style={'color':'#aaa'}),
         ], style={'padding':'8px 12px','fontSize':'12px','color':'#666'}),
         dcc.Graph(figure=fig_serie_srag(), config={'displayModeBar': False}),

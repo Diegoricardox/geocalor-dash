@@ -147,7 +147,7 @@ footer = html.Div(id='footer', children=[
         html.Img(src='/assets/header_ocs.png', style={'height':'28px','background':'white','borderRadius':'4px','padding':'2px 6px'}),
         html.Img(src='/assets/fiocruz.jpg', style={'height':'28px','borderRadius':'4px'}),
     ]),
-    html.Div([html.Strong('Desenvolvimento do painel: '), 'Diego Ricardo Xavier | OCS/ICICT/Fiocruz — 2026']),
+    html.Div(['Concepção e desenvolvimento do painel: Bruno Porto e Hendesson Alves | Apoio tecnológico: Equipe OCS/LIS/ICICT/Fiocruz — 2026']),
     html.Div([
         'GeoCalor Dashboard Python | Dados: INMET/ICEA | Metodologia: EHF | Referência: ',
         html.A('Porto et al. (2024) PLOS ONE', href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0295766', target='_blank', style={'color':'#aaa'}),
@@ -223,7 +223,7 @@ tab_inicio = html.Div(className='page-wrapper', children=[
             html.Img(src='/assets/header_ocs.png', style={'height':'45px','background':'#f0f0f0','borderRadius':'4px','padding':'3px'}),
             html.Img(src='/assets/logo_pcdas.png', style={'height':'45px'}),
         ]),
-        html.P([html.Strong('Desenvolvimento do painel: '), 'Diego Ricardo Xavier | OCS/ICICT/Fiocruz — 2026'],
+        html.P(['Concepção e desenvolvimento do painel: Bruno Porto e Hendesson Alves | Apoio tecnológico: Equipe OCS/LIS/ICICT/Fiocruz — 2026'],
                style={'marginTop':'12px','fontSize':'12px','color':'#777'}),
     ]),
 ])
@@ -240,10 +240,10 @@ tab_sobre = html.Div(className='page-wrapper', children=[
             html.P([html.Strong('Financiamento: '), 'CNPq — Conselho Nacional de Desenvolvimento Científico e Tecnológico (Chamada Nº 18/2023 — Processo 444938/2023-0)']),
             html.P(['IRD — Institut de Recherche pour le Développement (Instituto Francês de Pesquisa para o Desenvolvimento).']),
             html.Hr(),
-            html.P([html.Strong('Projeto desenvolvido pelo '), html.A('Laboratório de Geografia, Ambiente e Saúde (LAGAS)', href='https://lagas.sites.homologa.unb.br/', target='_blank', style={'color':TEAL}), ' da Universidade de Brasília (UnB)']),
+            html.P(['Projeto desenvolvido pelo ', html.A('Laboratório de Geografia, Ambiente e Saúde (LAGAS)', href='https://lagas.sites.homologa.unb.br/', target='_blank', style={'color':TEAL}), ' da Universidade de Brasília (UnB)']),
             html.P([html.Strong('Equipe: '), 'Helen Gurgel, Eliane Lima e Silva, Eucilene Santana, Amarilis Bezerra, Bruno Porto, Marina Miranda, Peter Zeilhofer, Caio Leal, Hendesson Alves, Isabella de Sá, Livia Feitosa']),
-            html.P([html.Strong('Painel R/Shiny: '), 'Bruno Porto e Hendesson Alves']),
-            html.P([html.Strong('Painel Python (GeoCalor Dash): '), html.Span('Diego Ricardo Xavier | OCS/ICICT/Fiocruz — 2026', style={'color':TEAL,'fontWeight':'600'})]),
+            html.P([html.Strong('Concepção e desenvolvimento do painel: '), 'Bruno Porto e Hendesson Alves']),
+            html.P([html.Strong('Apoio no desenvolvimento tecnológico: '), 'Equipe OCS/LIS/ICICT/Fiocruz — 2026']),
             html.P([html.Strong('Fontes dos dados: '), 'Instituto Nacional de Meteorologia (INMET) e Instituto de Controle do Espaço Aéreo (ICEA).']),
         ]), md=6),
         dbc.Col(html.Div(className='info-card', children=[
